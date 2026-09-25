@@ -1,110 +1,138 @@
-/**
- * Custom Linked List implementation for managing Student records.
- */
 public class StudentLinkedList {
 
-    private static class Node {
-        Student data;
+    private class Node {
+
+        Student student;
         Node next;
 
-        Node(Student data) {
-            this.data = data;
+        public Node(Student student) {
+            this.student = student;
             this.next = null;
         }
     }
 
     private Node head;
-    private int size;
 
     public StudentLinkedList() {
-        this.head = null;
-        this.size = 0;
+        head = null;
     }
 
-    /**
-     * Appends a student to the end of the linked list.
-     */
-    public void add(Student student) {
-        if (student == null) return;
+    public boolean isEmpty() {
+        return head == null;
+    }
+
+    public boolean addStudent(Student student) {
+
+        if (searchStudent(student.getStudentId()) != null) {
+            return false;
+        }
+
         Node newNode = new Node(student);
+
         if (head == null) {
             head = newNode;
-        } else {
-            Node current = head;
-            while (current.next != null) {
-                current = current.next;
-            }
-            current.next = newNode;
-        }
-        size++;
-    }
-
-    /**
-     * Removes a student by ID. Returns true if removed successfully.
-     */
-    public boolean remove(int studentId) {
-        if (head == null) return false;
-
-        if (head.data.getStudentId() == studentId) {
-            head = head.next;
-            size--;
             return true;
         }
 
         Node current = head;
-        while (current.next != null && current.next.data.getStudentId() != studentId) {
+
+        while (current.next != null) {
             current = current.next;
         }
 
-        if (current.next != null) {
-            current.next = current.next.next;
-            size--;
-            return true;
-        }
+        current.next = newNode;
 
-        return false;
+        return true;
     }
 
-    /**
-     * Searches for a student by ID. Returns Student object or null if not found.
-     */
-    public Student search(int studentId) {
+    public Student searchStudent(String studentId) {
+
         Node current = head;
+
         while (current != null) {
-            if (current.data.getStudentId() == studentId) {
-                return current.data;
+
+            if (current.student.getStudentId()
+                    .equalsIgnoreCase(studentId)) {
+
+                return current.student;
             }
+
             current = current.next;
         }
+
         return null;
     }
 
-    /**
-     * Returns the size of the linked list.
-     */
-    public int size() {
-        return size;
+    public boolean updateStudent(
+            String studentId,
+            String newName,
+            String newProgramme,
+            double newMarks) {
+
+        Student student = searchStudent(studentId);
+
+        if (student == null) {
+            return false;
+        }
+
+        student.setName(newName);
+        student.setProgramme(newProgramme);
+        student.setMarks(newMarks);
+
+        return true;
     }
 
-    /**
-     * Checks if the linked list is empty.
-     */
-    public boolean isEmpty() {
-        return size == 0;
+    public Student deleteStudent(String studentId) {
+
+        if (head == null) {
+            return null;
+        }
+
+        if (head.student.getStudentId().equalsIgnoreCase(studentId)) {
+
+            Student deletedStudent = head.student;
+
+            head = head.next;
+
+            return deletedStudent;
+        }
+
+        Node current = head;
+
+        while (current.next != null) {
+
+            if (current.next.student.getStudentId()
+                    .equalsIgnoreCase(studentId)) {
+
+                Student deletedStudent = current.next.student;
+
+                current.next = current.next.next;
+
+                return deletedStudent;
+            }
+
+            current = current.next;
+        }
+
+        return null;
     }
 
-    /**
-     * Displays all student records in the linked list.
-     */
-    public void display() {
-        if (isEmpty()) {
-            System.out.println("Linked List is empty.");
+    public void displayAllStudents() {
+
+        if (head == null) {
+
+            System.out.println("No student records available.");
             return;
         }
+
+        System.out.println("\n--- Student Records ---");
+
         Node current = head;
-        System.out.println("=== Student Linked List (" + size + " entries) ===");
+
         while (current != null) {
-            System.out.println(" -> " + current.data);
+
+            System.out.println(current.student);
+
             current = current.next;
         }
     }

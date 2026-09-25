@@ -1,87 +1,50 @@
-/**
- * Student data model representing a student in the CIT300 University System.
- */
-public class Student implements Comparable<Student> {
-    private int studentId;
-    private String name;
-    private double gpa;
-    private String major;
-    private String email;
+public class Student {
 
-    public Student(int studentId, String name, double gpa, String major, String email) {
+    private String studentId;
+    private String name;
+    private String programme;
+    private double marks;
+
+    public Student(String studentId, String name, String programme, double marks) {
         this.studentId = studentId;
         this.name = name;
-        this.gpa = gpa;
-        this.major = major;
-        this.email = email;
+        this.programme = programme;
+        this.marks = marks;
     }
 
-    public Student(int studentId, String name, double gpa, String major) {
-        this(studentId, name, gpa, major, name.toLowerCase().replaceAll("\\s+", ".") + "@university.edu");
-    }
-
-    // Getters and Setters
-    public int getStudentId() {
+    public String getStudentId() {
         return studentId;
-    }
-
-    public void setStudentId(int studentId) {
-        this.studentId = studentId;
     }
 
     public String getName() {
         return name;
     }
 
+    public String getProgramme() {
+        return programme;
+    }
+
+    public double getMarks() {
+        return marks;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
 
-    public double getGpa() {
-        return gpa;
+    public void setProgramme(String programme) {
+        this.programme = programme;
     }
 
-    public void setGpa(double gpa) {
-        this.gpa = gpa;
-    }
-
-    public String getMajor() {
-        return major;
-    }
-
-    public void setMajor(String major) {
-        this.major = major;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    @Override
-    public int compareTo(Student other) {
-        return Integer.compare(this.studentId, other.studentId);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        Student student = (Student) obj;
-        return studentId == student.studentId;
-    }
-
-    @Override
-    public int hashCode() {
-        return Integer.hashCode(studentId);
+    public void setMarks(double marks) {
+        this.marks = marks;
     }
 
     @Override
     public String toString() {
-        return String.format("Student[ID=%d, Name='%s', GPA=%.2f, Major='%s', Email='%s']",
-                studentId, name, gpa, major, email);
+        return "Student ID: " + studentId
+                + " | Name: " + name
+                + " | Programme: " + programme
+                + " | Marks: " + marks;
     }
 }
