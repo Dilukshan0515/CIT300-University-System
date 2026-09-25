@@ -1,167 +1,135 @@
-/**
- * Custom Hash Table implementation for O(1) average time Student lookups.
- * Uses Separate Chaining (Linked Lists) to resolve collisions.
- */
 public class StudentHashTable {
 
-    private static class HashNode {
-        int key;
-        Student value;
+    private class HashNode {
+
+        String studentId;
+        Student student;
         HashNode next;
 
-        HashNode(int key, Student value) {
-            this.key = key;
-            this.value = value;
+        public HashNode(
+                String studentId,
+                Student student) {
+
+            this.studentId = studentId;
+            this.student = student;
             this.next = null;
         }
     }
 
     private HashNode[] table;
-    private int capacity;
-    private int size;
-    private static final double DEFAULT_LOAD_FACTOR = 0.75;
 
-    public StudentHashTable(int initialCapacity) {
-        this.capacity = initialCapacity > 0 ? initialCapacity : 16;
-        this.table = new HashNode[capacity];
-        this.size = 0;
+    public StudentHashTable(int size) {
+
+        table = new HashNode[size];
     }
 
-    public StudentHashTable() {
-        this(16);
+    // Convert Student ID into table index
+    private int hash(String studentId) {
+
+        return (
+                studentId.toUpperCase().hashCode()
+                        & 0x7fffffff
+        ) % table.length;
     }
 
-    private int hash(int key) {
-        return Math.abs(key) % capacity;
-    }
+    // Add student to hash table
+    public boolean addStudent(Student student) {
 
-    /**
-     * Inserts or updates a student record in the hash table.
-     */
-    public void put(int key, Student student) {
-        if (student == null) return;
-        int bucketIndex = hash(key);
-        HashNode head = table[bucketIndex];
+        String studentId =
+                student.getStudentId();
 
-        // Search if key already exists in chain
-        HashNode current = head;
+        int index =
+                hash(studentId);
+
+        HashNode current =
+                table[index];
+
+        // Check duplicate
         while (current != null) {
-            if (current.key == key) {
-                current.value = student;
-                return;
+
+            if (current.studentId
+                    .equalsIgnoreCase(studentId)) {
+
+                return false;
             }
+
             current = current.next;
         }
 
-        // Insert new node at the head of the bucket chain
-        HashNode newNode = new HashNode(key, student);
-        newNode.next = head;
-        table[bucketIndex] = newNode;
-        size++;
+        HashNode newNode =
+                new HashNode(
+                        studentId,
+                        student
+                );
 
-        // Rehash if load factor exceeded
-        if ((double) size / capacity >= DEFAULT_LOAD_FACTOR) {
-            rehash();
-        }
+        // Add at beginning of bucket
+        newNode.next =
+                table[index];
+
+        table[index] =
+                newNode;
+
+        return true;
     }
 
-    /**
-     * Overload for convenience using student.getStudentId() as key.
-     */
-    public void put(Student student) {
-        if (student != null) {
-            put(student.getStudentId(), student);
-        }
-    }
+    // Search student using Student ID
+    public Student searchStudent(String studentId) {
 
-    /**
-     * Retrieves a student by ID. Returns null if not found.
-     */
-    public Student get(int key) {
-        int bucketIndex = hash(key);
-        HashNode current = table[bucketIndex];
+        int index =
+                hash(studentId);
+
+        HashNode current =
+                table[index];
+
         while (current != null) {
-            if (current.key == key) {
-                return current.value;
+
+            if (current.studentId
+                    .equalsIgnoreCase(studentId)) {
+
+                return current.student;
             }
+
             current = current.next;
         }
+
         return null;
     }
 
-    /**
-     * Removes a student record by ID.
-     */
-    public boolean remove(int key) {
-        int bucketIndex = hash(key);
-        HashNode current = table[bucketIndex];
-        HashNode prev = null;
+    // Remove student from hash table
+    public Student removeStudent(String studentId) {
+
+        int index =
+                hash(studentId);
+
+        HashNode current =
+                table[index];
+
+        HashNode previous = null;
 
         while (current != null) {
-            if (current.key == key) {
-                if (prev == null) {
-                    table[bucketIndex] = current.next;
+
+            if (current.studentId
+                    .equalsIgnoreCase(studentId)) {
+
+                if (previous == null) {
+
+                    table[index] =
+                            current.next;
+
                 } else {
-                    prev.next = current.next;
+
+                    previous.next =
+                            current.next;
                 }
-                size--;
-                return true;
+
+                return current.student;
             }
-            prev = current;
+
+            previous = current;
+
             current = current.next;
         }
-        return false;
-    }
 
-    /**
-     * Checks if key exists.
-     */
-    public boolean containsKey(int key) {
-        return get(key) != null;
-    }
-
-    private void rehash() {
-        int oldCapacity = capacity;
-        HashNode[] oldTable = table;
-
-        capacity = oldCapacity * 2;
-        table = new HashNode[capacity];
-        size = 0;
-
-        for (int i = 0; i < oldCapacity; i++) {
-            HashNode current = oldTable[i];
-            while (current != null) {
-                put(current.key, current.value);
-                current = current.next;
-            }
-        }
-    }
-
-    public int size() {
-        return size;
-    }
-
-    public boolean isEmpty() {
-        return size == 0;
-    }
-
-    /**
-     * Displays hash table buckets and chain elements.
-     */
-    public void displayHashTable() {
-        System.out.println("=== Student Hash Table (Capacity=" + capacity + ", Size=" + size + ") ===");
-        for (int i = 0; i < capacity; i++) {
-            System.out.print("Bucket " + i + ": ");
-            HashNode current = table[i];
-            if (current == null) {
-                System.out.println("[ Empty ]");
-            } else {
-                while (current != null) {
-                    System.out.print("[" + current.key + " -> " + current.value.getName() + "] ");
-                    current = current.next;
-                }
-                System.out.println();
-            }
-        }
+        return null;
     }
 }
