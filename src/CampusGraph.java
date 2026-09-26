@@ -1,171 +1,269 @@
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 
-/**
- * Graph data structure representing campus locations and pathways.
- * Supports Dijkstra's algorithm for finding shortest navigation paths between campus buildings.
- */
 public class CampusGraph {
 
-    public static class Edge {
-        String targetLocation;
-        double distanceMeters;
-
-        public Edge(String targetLocation, double distanceMeters) {
-            this.targetLocation = targetLocation;
-            this.distanceMeters = distanceMeters;
-        }
-
-        public String getTargetLocation() {
-            return targetLocation;
-        }
-
-        public double getDistanceMeters() {
-            return distanceMeters;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("%s (%.0fm)", targetLocation, distanceMeters);
-        }
-    }
-
-    private Map<String, List<Edge>> adjacencyList;
+    // Adjacency List
+    private Map<String, List<String>> adjacencyList;
 
     public CampusGraph() {
-        this.adjacencyList = new HashMap<>();
+        adjacencyList = new LinkedHashMap<>();
     }
 
-    /**
-     * Adds a campus location/building vertex.
-     */
-    public void addLocation(String locationName) {
-        if (locationName != null && !adjacencyList.containsKey(locationName)) {
-            adjacencyList.put(locationName, new ArrayList<>());
+    // Find the actual stored location name
+    private String findLocation(String location) {
+
+        for (String existingLocation : adjacencyList.keySet()) {
+
+            if (existingLocation.equalsIgnoreCase(location)) {
+                return existingLocation;
+            }
+        }
+
+        return null;
+    }
+
+    // Option 10 - Add Campus Location
+    public boolean addLocation(String location) {
+
+        if (location == null || location.trim().isEmpty()) {
+            return false;
+        }
+
+        location = location.trim();
+
+        if (findLocation(location) != null) {
+            return false;
+        }
+
+        adjacencyList.put(
+                location,
+                new ArrayList<>()
+        );
+
+        return true;
+    }
+
+    // Option 11 - Remove Campus Location
+    public boolean removeLocation(String location) {
+
+        String actualLocation =
+                findLocation(location);
+
+        if (actualLocation == null) {
+            return false;
+        }
+
+        // Remove the location itself
+        adjacencyList.remove(actualLocation);
+
+        // Remove connections to this location
+        for (List<String> neighbours :
+                adjacencyList.values()) {
+
+            neighbours.removeIf(
+                    neighbour ->
+                            neighbour.equalsIgnoreCase(actualLocation)
+            );
+        }
+
+        return true;
+    }
+
+    // Option 12 - Add Campus Connection/Road
+    public boolean addConnection(
+            String location1,
+            String location2) {
+
+        String first =
+                findLocation(location1);
+
+        String second =
+                findLocation(location2);
+
+        // Both locations must exist
+        if (first == null || second == null) {
+            return false;
+        }
+
+        // Cannot connect a location to itself
+        if (first.equalsIgnoreCase(second)) {
+            return false;
+        }
+
+        // Prevent duplicate connection
+        if (containsIgnoreCase(
+                adjacencyList.get(first),
+                second)) {
+
+            return false;
+        }
+
+        // Undirected graph
+        adjacencyList.get(first).add(second);
+        adjacencyList.get(second).add(first);
+
+        return true;
+    }
+
+    // Option 13 - Remove Campus Connection/Road
+    public boolean removeConnection(
+            String location1,
+            String location2) {
+
+        String first =
+                findLocation(location1);
+
+        String second =
+                findLocation(location2);
+
+        if (first == null || second == null) {
+            return false;
+        }
+
+        boolean removedFromFirst =
+                removeIgnoreCase(
+                        adjacencyList.get(first),
+                        second
+                );
+
+        boolean removedFromSecond =
+                removeIgnoreCase(
+                        adjacencyList.get(second),
+                        first
+                );
+
+        return removedFromFirst
+                && removedFromSecond;
+    }
+
+    // Option 14 - Display Campus Connections
+    public void displayConnections() {
+
+        if (adjacencyList.isEmpty()) {
+
+            System.out.println(
+                    "No campus locations available."
+            );
+
+            return;
+        }
+
+        System.out.println(
+                "\n--- Campus Connections ---"
+        );
+
+        for (Map.Entry<String, List<String>>
+                entry : adjacencyList.entrySet()) {
+
+            System.out.print(
+                    entry.getKey() + " -> "
+            );
+
+            if (entry.getValue().isEmpty()) {
+
+                System.out.println(
+                        "No connections"
+                );
+
+            } else {
+
+                System.out.println(
+                        String.join(
+                                ", ",
+                                entry.getValue()
+                        )
+                );
+            }
         }
     }
 
-    /**
-     * Adds a bidirectional path between two campus locations with a distance in meters.
-     */
-    public void addPath(String source, String destination, double distanceMeters) {
-        addLocation(source);
-        addLocation(destination);
+    // Option 15 - BFS Traversal
+    public boolean bfs(String startLocation) {
 
-        adjacencyList.get(source).add(new Edge(destination, distanceMeters));
-        adjacencyList.get(destination).add(new Edge(source, distanceMeters));
-    }
+        String start =
+                findLocation(startLocation);
 
-    /**
-     * Finds the shortest path between start and end locations using Dijkstra's algorithm.
-     */
-    public PathResult getShortestPath(String startLocation, String endLocation) {
-        if (!adjacencyList.containsKey(startLocation) || !adjacencyList.containsKey(endLocation)) {
-            return new PathResult(Collections.emptyList(), Double.POSITIVE_INFINITY, false);
+        if (start == null) {
+            return false;
         }
 
-        Map<String, Double> distances = new HashMap<>();
-        Map<String, String> previousNodes = new HashMap<>();
-        PriorityQueue<StringDistanceNode> pq = new PriorityQueue<>(Comparator.comparingDouble(n -> n.distance));
+        Set<String> visited =
+                new LinkedHashSet<>();
 
-        for (String node : adjacencyList.keySet()) {
-            distances.put(node, Double.POSITIVE_INFINITY);
-        }
-        distances.put(startLocation, 0.0);
-        pq.add(new StringDistanceNode(startLocation, 0.0));
+        Queue<String> queue =
+                new LinkedList<>();
 
-        while (!pq.isEmpty()) {
-            StringDistanceNode current = pq.poll();
-            String u = current.node;
+        visited.add(start);
+        queue.offer(start);
 
-            if (u.equals(endLocation)) break;
+        System.out.println(
+                "\n--- BFS Traversal ---"
+        );
 
-            if (current.distance > distances.get(u)) continue;
+        while (!queue.isEmpty()) {
 
-            for (Edge edge : adjacencyList.get(u)) {
-                String v = edge.targetLocation;
-                double weight = edge.distanceMeters;
-                double newDist = distances.get(u) + weight;
+            String current =
+                    queue.poll();
 
-                if (newDist < distances.get(v)) {
-                    distances.put(v, newDist);
-                    previousNodes.put(v, u);
-                    pq.add(new StringDistanceNode(v, newDist));
+            System.out.print(
+                    current + " "
+            );
+
+            for (String neighbour :
+                    adjacencyList.get(current)) {
+
+                if (!visited.contains(neighbour)) {
+
+                    visited.add(neighbour);
+                    queue.offer(neighbour);
                 }
             }
         }
 
-        if (distances.get(endLocation) == Double.POSITIVE_INFINITY) {
-            return new PathResult(Collections.emptyList(), Double.POSITIVE_INFINITY, false);
-        }
+        System.out.println();
 
-        List<String> path = new LinkedList<>();
-        String current = endLocation;
-        while (current != null) {
-            path.add(0, current);
-            current = previousNodes.get(current);
-        }
-
-        return new PathResult(path, distances.get(endLocation), true);
+        return true;
     }
 
-    /**
-     * Displays all campus locations and connected paths.
-     */
-    public void displayGraph() {
-        System.out.println("=== Campus Graph Map (Locations & Pathways) ===");
-        if (adjacencyList.isEmpty()) {
-            System.out.println("No locations in graph.");
-            return;
-        }
-        for (Map.Entry<String, List<Edge>> entry : adjacencyList.entrySet()) {
-            System.out.println(entry.getKey() + " connects to -> " + entry.getValue());
-        }
-    }
+    // Helper method
+    private boolean containsIgnoreCase(
+            List<String> list,
+            String value) {
 
-    public Set<String> getLocations() {
-        return adjacencyList.keySet();
-    }
+        for (String item : list) {
 
-    private static class StringDistanceNode {
-        String node;
-        double distance;
-
-        StringDistanceNode(String node, double distance) {
-            this.node = node;
-            this.distance = distance;
-        }
-    }
-
-    public static class PathResult {
-        private List<String> path;
-        private double totalDistance;
-        private boolean pathFound;
-
-        public PathResult(List<String> path, double totalDistance, boolean pathFound) {
-            this.path = path;
-            this.totalDistance = totalDistance;
-            this.pathFound = pathFound;
-        }
-
-        public List<String> getPath() {
-            return path;
-        }
-
-        public double getTotalDistance() {
-            return totalDistance;
-        }
-
-        public boolean isPathFound() {
-            return pathFound;
-        }
-
-        @Override
-        public String toString() {
-            if (!pathFound) {
-                return "No available path found between specified locations.";
+            if (item.equalsIgnoreCase(value)) {
+                return true;
             }
-            return String.format("Route: %s | Total Distance: %.1f meters",
-                    String.join(" -> ", path), totalDistance);
         }
+
+        return false;
+    }
+
+    // Helper method
+    private boolean removeIgnoreCase(
+            List<String> list,
+            String value) {
+
+        for (int i = 0;
+             i < list.size();
+             i++) {
+
+            if (list.get(i)
+                    .equalsIgnoreCase(value)) {
+
+                list.remove(i);
+                return true;
+            }
+        }
+
+        return false;
     }
 }
