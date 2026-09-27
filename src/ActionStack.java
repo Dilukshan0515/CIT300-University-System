@@ -1,125 +1,89 @@
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
-/**
- * Custom Stack implementation for maintaining action history (LIFO).
- * Useful for auditing administrative operations and supporting undo features.
- */
 public class ActionStack {
 
-    public static class Action {
-        private String actionType;
-        private String description;
-        private String timestamp;
+    private class Node {
 
-        public Action(String actionType, String description) {
-            this.actionType = actionType;
-            this.description = description;
-            this.timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        }
+        String action;
+        Node next;
 
-        public String getActionType() {
-            return actionType;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public String getTimestamp() {
-            return timestamp;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("[%s] %s: %s", timestamp, actionType, description);
-        }
-    }
-
-    private static class StackNode {
-        Action action;
-        StackNode next;
-
-        StackNode(Action action) {
+        public Node(String action) {
             this.action = action;
             this.next = null;
         }
     }
 
-    private StackNode top;
-    private int size;
+    private Node top;
 
     public ActionStack() {
-        this.top = null;
-        this.size = 0;
+        top = null;
     }
 
-    /**
-     * Pushes a new action onto the stack.
-     */
-    public void push(Action action) {
-        if (action == null) return;
-        StackNode newNode = new StackNode(action);
-        newNode.next = top;
-        top = newNode;
-        size++;
-    }
-
-    /**
-     * Pushes an action using type and description parameters.
-     */
-    public void push(String actionType, String description) {
-        push(new Action(actionType, description));
-    }
-
-    /**
-     * Pops and returns the most recent action from the stack.
-     */
-    public Action pop() {
-        if (isEmpty()) {
-            return null;
-        }
-        Action action = top.action;
-        top = top.next;
-        size--;
-        return action;
-    }
-
-    /**
-     * Peeks at the top action without removing it.
-     */
-    public Action peek() {
-        if (isEmpty()) return null;
-        return top.action;
-    }
-
-    /**
-     * Returns true if stack is empty.
-     */
     public boolean isEmpty() {
         return top == null;
     }
 
-    /**
-     * Returns the size of the stack.
-     */
-    public int size() {
-        return size;
+    // Add recent action to stack
+    public void push(String action) {
+
+        Node newNode = new Node(action);
+
+        newNode.next = top;
+
+        top = newNode;
     }
 
-    /**
-     * Displays all action history in order from newest to oldest.
-     */
-    public void displayHistory() {
-        if (isEmpty()) {
-            System.out.println("Action Stack is empty.");
+    // Remove most recent action
+    public String pop() {
+
+        if (top == null) {
+            return null;
+        }
+
+        String action = top.action;
+
+        top = top.next;
+
+        return action;
+    }
+
+    // View latest action
+    public String peek() {
+
+        if (top == null) {
+            return null;
+        }
+
+        return top.action;
+    }
+
+    // Option 7 - Display recent actions
+    public void displayRecentActions() {
+
+        if (top == null) {
+
+            System.out.println(
+                    "No recent actions available."
+            );
+
             return;
         }
-        System.out.println("=== Action History Stack (Most Recent First, Size=" + size + ") ===");
-        StackNode current = top;
+
+        System.out.println(
+                "\n--- Recent Actions using Stack ---"
+        );
+
+        Node current = top;
+
+        int number = 1;
+
         while (current != null) {
-            System.out.println(" | " + current.action);
+
+            System.out.println(
+                    number + ". " + current.action
+            );
+
             current = current.next;
+
+            number++;
         }
     }
 }

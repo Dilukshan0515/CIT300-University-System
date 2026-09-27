@@ -1,13 +1,11 @@
-/**
- * Custom Queue implementation (FIFO) for managing student service requests.
- */
 public class ServiceRequestQueue {
 
-    private static class Node {
+    private class Node {
+
         ServiceRequest request;
         Node next;
 
-        Node(ServiceRequest request) {
+        public Node(ServiceRequest request) {
             this.request = request;
             this.next = null;
         }
@@ -15,80 +13,87 @@ public class ServiceRequestQueue {
 
     private Node front;
     private Node rear;
-    private int size;
 
     public ServiceRequestQueue() {
-        this.front = null;
-        this.rear = null;
-        this.size = 0;
+        front = null;
+        rear = null;
     }
 
-    /**
-     * Enqueues a new ServiceRequest at the end of the queue.
-     */
-    public void enqueue(ServiceRequest request) {
-        if (request == null) return;
-        Node newNode = new Node(request);
-        if (isEmpty()) {
-            front = newNode;
-            rear = newNode;
-        } else {
-            rear.next = newNode;
-            rear = newNode;
-        }
-        size++;
-    }
-
-    /**
-     * Dequeues and returns the next ServiceRequest at the front of the queue.
-     */
-    public ServiceRequest dequeue() {
-        if (isEmpty()) {
-            return null;
-        }
-        ServiceRequest request = front.request;
-        front = front.next;
-        if (front == null) {
-            rear = null;
-        }
-        size--;
-        return request;
-    }
-
-    /**
-     * Peeks at the request at the front without removing it.
-     */
-    public ServiceRequest peek() {
-        if (isEmpty()) return null;
-        return front.request;
-    }
-
-    /**
-     * Checks if queue is empty.
-     */
     public boolean isEmpty() {
         return front == null;
     }
 
-    /**
-     * Returns size of queue.
-     */
-    public int size() {
-        return size;
-    }
+    // Option 5 - Add Service Request
+    public void enqueue(ServiceRequest request) {
 
-    /**
-     * Displays all pending service requests in queue order.
-     */
-    public void displayQueue() {
-        if (isEmpty()) {
-            System.out.println("Service Request Queue is empty.");
+        Node newNode = new Node(request);
+
+        if (rear == null) {
+
+            front = newNode;
+            rear = newNode;
+
             return;
         }
-        System.out.println("=== Service Request Queue (Front to Rear, Size=" + size + ") ===");
+
+        rear.next = newNode;
+
+        rear = newNode;
+    }
+
+    // Option 6 - Process Next Service Request
+    public ServiceRequest dequeue() {
+
+        if (front == null) {
+            return null;
+        }
+
+        ServiceRequest request =
+                front.request;
+
+        front = front.next;
+
+        if (front == null) {
+            rear = null;
+        }
+
+        return request;
+    }
+
+    // View next request
+    public ServiceRequest peek() {
+
+        if (front == null) {
+            return null;
+        }
+
+        return front.request;
+    }
+
+    // Useful for testing
+    public void displayQueue() {
+
+        if (front == null) {
+
+            System.out.println(
+                    "No service requests in queue."
+            );
+
+            return;
+        }
+
+        System.out.println(
+                "\n--- Service Request Queue ---"
+        );
+
         Node current = front;
+
         while (current != null) {
-            System.out.println(" -> " + current.request);
+
+            System.out.println(
+                    current.request
+            );
+
             current = current.next;
         }
     }
