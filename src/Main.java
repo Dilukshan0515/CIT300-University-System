@@ -1,270 +1,853 @@
 import java.util.Scanner;
 
-/**
- * Main application driver integrating all CIT300 University System modules:
- * - Student Records (LinkedList, BST, Hash Table)
- * - Action Audit Stack
- * - Service Request Processing Queue
- * - Campus Graph Navigation
- */
 public class Main {
 
-    private static StudentLinkedList studentList = new StudentLinkedList();
-    private static StudentBST studentBST = new StudentBST();
-    private static StudentHashTable studentHashTable = new StudentHashTable();
-    private static ActionStack actionStack = new ActionStack();
-    private static ServiceRequestQueue requestQueue = new ServiceRequestQueue();
-    private static CampusGraph campusGraph = new CampusGraph();
+    private static final Scanner scanner = new Scanner(System.in);
 
-    private static int requestSequence = 1001;
+    // Member 1
+    private static final StudentLinkedList studentList =
+            new StudentLinkedList();
+
+    // Member 2
+    private static final ActionStack actionStack =
+            new ActionStack();
+
+    private static final ServiceRequestQueue requestQueue =
+            new ServiceRequestQueue();
+
+    // Member 3
+    private static final StudentBST studentBST =
+            new StudentBST();
+
+    private static final StudentHashTable studentHashTable =
+            new StudentHashTable(10);
+
+    // Member 4
+    private static final CampusGraph campusGraph =
+            new CampusGraph();
+
+    private static int nextRequestId = 1;
 
     public static void main(String[] args) {
-        initializeSampleData();
 
-        Scanner scanner = new Scanner(System.in);
-        boolean running = true;
+        int choice;
 
-        System.out.println("=================================================");
-        System.out.println("   WELCOME TO CIT300 UNIVERSITY MANAGEMENT SYSTEM");
-        System.out.println("=================================================");
+        do {
 
-        while (running) {
-            printMainMenu();
-            System.out.print("Enter choice (1-9): ");
-            String input = scanner.nextLine().trim();
+            displayMenu();
 
-            switch (input) {
-                case "1":
-                    addNewStudent(scanner);
+            choice = readInt(
+                    "Enter your choice (1-16): ",
+                    1,
+                    16
+            );
+
+            switch (choice) {
+
+                case 1:
+                    addStudentRecord();
                     break;
-                case "2":
-                    searchStudent(scanner);
+
+                case 2:
+                    updateStudentRecord();
                     break;
-                case "3":
-                    displayStudentRecords();
+
+                case 3:
+                    deleteStudentRecord();
                     break;
-                case "4":
-                    submitServiceRequest(scanner);
+
+                case 4:
+                    studentList.displayAllStudents();
                     break;
-                case "5":
+
+                case 5:
+                    addServiceRequest();
+                    break;
+
+                case 6:
                     processNextServiceRequest();
                     break;
-                case "6":
-                    viewActionStackHistory();
+
+                case 7:
+                    actionStack.displayRecentActions();
                     break;
-                case "7":
-                    navigateCampusGraph(scanner);
+
+                case 8:
+                    studentBST.displayStudents();
                     break;
-                case "8":
-                    runSystemSelfTest();
+
+                case 9:
+                    searchStudentUsingHashing();
                     break;
-                case "9":
-                    running = false;
-                    System.out.println("\nExiting CIT300 University System. Goodbye!");
+
+                case 10:
+                    addCampusLocation();
                     break;
+
+                case 11:
+                    removeCampusLocation();
+                    break;
+
+                case 12:
+                    addCampusConnection();
+                    break;
+
+                case 13:
+                    removeCampusConnection();
+                    break;
+
+                case 14:
+                    campusGraph.displayConnections();
+                    break;
+
+                case 15:
+                    traverseCampusLocations();
+                    break;
+
+                case 16:
+                    System.out.println(
+                            "\nThank you for using the system."
+                    );
+                    System.out.println(
+                            "Program terminated successfully."
+                    );
+                    break;
+
                 default:
-                    System.out.println("Invalid choice. Please enter a number between 1 and 9.");
+                    System.out.println(
+                            "Invalid option."
+                    );
             }
-            System.out.println();
-        }
+
+        } while (choice != 16);
 
         scanner.close();
     }
 
-    private static void printMainMenu() {
-        System.out.println("\n-------------------------------------------------");
-        System.out.println("                 MAIN MENU");
-        System.out.println("-------------------------------------------------");
-        System.out.println("1. Add New Student (Updates LinkedList, BST, Hash Table)");
-        System.out.println("2. Search Student (Fast Lookup via Hash Table / BST)");
-        System.out.println("3. Display All Student Records (In-Order BST & LinkedList)");
-        System.out.println("4. Submit Student Service Request (Enqueue)");
-        System.out.println("5. Process Next Service Request (Dequeue)");
-        System.out.println("6. View Action Stack History (Audit Log)");
-        System.out.println("7. Find Shortest Campus Route (Graph Navigation)");
-        System.out.println("8. Run Data Structures Self-Test Demonstration");
-        System.out.println("9. Exit System");
-        System.out.println("-------------------------------------------------");
+    // -------------------------------------------------
+    // MENU
+    // -------------------------------------------------
+
+    private static void displayMenu() {
+
+        System.out.println();
+        System.out.println(
+                "========================================================"
+        );
+
+        System.out.println(
+                " UNIVERSITY STUDENT RECORD & CAMPUS ROUTE MANAGEMENT SYSTEM"
+        );
+
+        System.out.println(
+                "========================================================"
+        );
+
+        System.out.println(
+                "1. Add Student Record"
+        );
+
+        System.out.println(
+                "2. Update Student Record"
+        );
+
+        System.out.println(
+                "3. Delete Student Record"
+        );
+
+        System.out.println(
+                "4. Display All Records using Linked List"
+        );
+
+        System.out.println(
+                "5. Add Service Request to Queue"
+        );
+
+        System.out.println(
+                "6. Process Next Service Request"
+        );
+
+        System.out.println(
+                "7. Display Recent Actions using Stack"
+        );
+
+        System.out.println(
+                "8. Display Students using BST/AVL"
+        );
+
+        System.out.println(
+                "9. Search Student using Hashing"
+        );
+
+        System.out.println(
+                "10. Add Campus Location"
+        );
+
+        System.out.println(
+                "11. Remove Campus Location"
+        );
+
+        System.out.println(
+                "12. Add Campus Connection/Road"
+        );
+
+        System.out.println(
+                "13. Remove Campus Connection/Road"
+        );
+
+        System.out.println(
+                "14. Display Campus Connections"
+        );
+
+        System.out.println(
+                "15. Traverse Campus Locations using BFS or DFS"
+        );
+
+        System.out.println(
+                "16. Exit"
+        );
+
+        System.out.println(
+                "========================================================"
+        );
     }
 
-    private static void initializeSampleData() {
-        // Seed initial students
-        Student s1 = new Student(101, "Alice Smith", 3.85, "Computer Science");
-        Student s2 = new Student(102, "Bob Johnson", 3.42, "Software Engineering");
-        Student s3 = new Student(103, "Charlie Davis", 3.91, "Cybersecurity");
-        Student s4 = new Student(104, "Diana Prince", 3.75, "Data Science");
+    // -------------------------------------------------
+    // OPTION 1 - ADD STUDENT
+    // -------------------------------------------------
 
-        addStudentToStructures(s1);
-        addStudentToStructures(s2);
-        addStudentToStructures(s3);
-        addStudentToStructures(s4);
+    private static void addStudentRecord() {
 
-        actionStack.push("SYSTEM_INIT", "Seeded 4 initial student records into system structures.");
+        System.out.println(
+                "\n--- Add Student Record ---"
+        );
 
-        // Seed initial service requests
-        requestQueue.enqueue(new ServiceRequest(requestSequence++, 101, "TRANSCRIPT", "Request official transcript for grad application", "HIGH"));
-        requestQueue.enqueue(new ServiceRequest(requestSequence++, 102, "ID_CARD", "Replacement ID card request", "MEDIUM"));
+        String studentId =
+                readNonEmpty(
+                        "Enter Student ID: "
+                );
 
-        // Seed campus graph nodes and paths
-        campusGraph.addPath("Main Entrance", "Library", 250);
-        campusGraph.addPath("Library", "Computer Lab", 150);
-        campusGraph.addPath("Main Entrance", "Student Center", 300);
-        campusGraph.addPath("Student Center", "Computer Lab", 200);
-        campusGraph.addPath("Computer Lab", "Engineering Building", 180);
-        campusGraph.addPath("Student Center", "Dormitory A", 400);
-        campusGraph.addPath("Engineering Building", "Dormitory A", 350);
-    }
+        if (studentList.searchStudent(studentId) != null) {
 
-    private static void addStudentToStructures(Student student) {
-        studentList.add(student);
-        studentBST.insert(student);
-        studentHashTable.put(student);
-    }
+            System.out.println(
+                    "Error: Student ID already exists."
+            );
 
-    private static void addNewStudent(Scanner scanner) {
-        try {
-            System.out.print("Enter Student ID (integer): ");
-            int id = Integer.parseInt(scanner.nextLine().trim());
+            return;
+        }
 
-            if (studentHashTable.containsKey(id)) {
-                System.out.println("Error: Student with ID " + id + " already exists!");
-                return;
-            }
+        String name =
+                readNonEmpty(
+                        "Enter Student Name: "
+                );
 
-            System.out.print("Enter Student Full Name: ");
-            String name = scanner.nextLine().trim();
+        String programme =
+                readNonEmpty(
+                        "Enter Programme: "
+                );
 
-            System.out.print("Enter GPA (0.0 - 4.0): ");
-            double gpa = Double.parseDouble(scanner.nextLine().trim());
+        double marks =
+                readDouble(
+                        "Enter Marks (0-100): ",
+                        0,
+                        100
+                );
 
-            System.out.print("Enter Major: ");
-            String major = scanner.nextLine().trim();
+        Student student =
+                new Student(
+                        studentId,
+                        name,
+                        programme,
+                        marks
+                );
 
-            Student student = new Student(id, name, gpa, major);
-            addStudentToStructures(student);
-            actionStack.push("ADD_STUDENT", "Added student ID " + id + " (" + name + ")");
+        boolean added =
+                studentList.addStudent(student);
 
-            System.out.println("Successfully registered student: " + student);
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid input format. Student creation cancelled.");
+        if (added) {
+
+            studentBST.insertStudent(student);
+
+            studentHashTable.addStudent(student);
+
+            actionStack.push(
+                    "Added Student: " + studentId
+            );
+
+            System.out.println(
+                    "Student record added successfully."
+            );
+
+        } else {
+
+            System.out.println(
+                    "Unable to add student record."
+            );
         }
     }
 
-    private static void searchStudent(Scanner scanner) {
-        try {
-            System.out.print("Enter Student ID to search: ");
-            int id = Integer.parseInt(scanner.nextLine().trim());
+    // -------------------------------------------------
+    // OPTION 2 - UPDATE STUDENT
+    // -------------------------------------------------
 
-            System.out.println("\n--- Searching via Hash Table (O(1) avg) ---");
-            Student fromHash = studentHashTable.get(id);
-            if (fromHash != null) {
-                System.out.println("Found in Hash Table: " + fromHash);
-            } else {
-                System.out.println("Not found in Hash Table.");
-            }
+    private static void updateStudentRecord() {
 
-            System.out.println("\n--- Searching via BST (O(log n) avg) ---");
-            Student fromBST = studentBST.search(id);
-            if (fromBST != null) {
-                System.out.println("Found in BST: " + fromBST);
-            } else {
-                System.out.println("Not found in BST.");
-            }
+        System.out.println(
+                "\n--- Update Student Record ---"
+        );
 
-            actionStack.push("SEARCH_STUDENT", "Searched for student ID " + id);
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid Student ID format.");
+        String studentId =
+                readNonEmpty(
+                        "Enter Student ID to update: "
+                );
+
+        Student student =
+                studentList.searchStudent(studentId);
+
+        if (student == null) {
+
+            System.out.println(
+                    "Student record not found."
+            );
+
+            return;
+        }
+
+        System.out.println(
+                "Current Record:"
+        );
+
+        System.out.println(student);
+
+        String newName =
+                readNonEmpty(
+                        "Enter New Name: "
+                );
+
+        String newProgramme =
+                readNonEmpty(
+                        "Enter New Programme: "
+                );
+
+        double newMarks =
+                readDouble(
+                        "Enter New Marks (0-100): ",
+                        0,
+                        100
+                );
+
+        boolean updated =
+                studentList.updateStudent(
+                        studentId,
+                        newName,
+                        newProgramme,
+                        newMarks
+                );
+
+        if (updated) {
+
+            actionStack.push(
+                    "Updated Student: " + studentId
+            );
+
+            System.out.println(
+                    "Student record updated successfully."
+            );
+
+        } else {
+
+            System.out.println(
+                    "Unable to update student record."
+            );
         }
     }
 
-    private static void displayStudentRecords() {
-        System.out.println("\n--- Displaying via Student LinkedList ---");
-        studentList.display();
+    // -------------------------------------------------
+    // OPTION 3 - DELETE STUDENT
+    // -------------------------------------------------
 
-        System.out.println("\n--- Displaying Sorted Records via BST In-Order Traversal ---");
-        studentBST.inOrderTraversal();
+    private static void deleteStudentRecord() {
 
-        System.out.println("\n--- Displaying Hash Table Buckets ---");
-        studentHashTable.displayHashTable();
+        System.out.println(
+                "\n--- Delete Student Record ---"
+        );
 
-        actionStack.push("VIEW_STUDENTS", "Viewed all student records across structures.");
-    }
+        String studentId =
+                readNonEmpty(
+                        "Enter Student ID to delete: "
+                );
 
-    private static void submitServiceRequest(Scanner scanner) {
-        try {
-            System.out.print("Enter Student ID submitting request: ");
-            int studentId = Integer.parseInt(scanner.nextLine().trim());
+        Student deletedStudent =
+                studentList.deleteStudent(studentId);
 
-            if (!studentHashTable.containsKey(studentId)) {
-                System.out.println("Warning: Student ID " + studentId + " is not registered in the system.");
-            }
+        if (deletedStudent == null) {
 
-            System.out.print("Enter Request Type (e.g., ADVISING, REGISTRATION, TRANSCRIPT): ");
-            String type = scanner.nextLine().trim();
+            System.out.println(
+                    "Student record not found."
+            );
 
-            System.out.print("Enter Short Description: ");
-            String desc = scanner.nextLine().trim();
-
-            System.out.print("Enter Priority (HIGH, MEDIUM, LOW): ");
-            String priority = scanner.nextLine().trim();
-
-            ServiceRequest req = new ServiceRequest(requestSequence++, studentId, type, desc, priority);
-            requestQueue.enqueue(req);
-            actionStack.push("SUBMIT_REQUEST", "Enqueued service request ID " + req.getRequestId() + " for student " + studentId);
-
-            System.out.println("Service request submitted successfully: " + req);
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid numeric input.");
+            return;
         }
+
+        studentBST.deleteStudent(studentId);
+
+        studentHashTable.removeStudent(studentId);
+
+        actionStack.push(
+                "Deleted Student: " + studentId
+        );
+
+        System.out.println(
+                "Student record deleted successfully."
+        );
     }
+
+    // -------------------------------------------------
+    // OPTION 5 - ADD SERVICE REQUEST
+    // -------------------------------------------------
+
+    private static void addServiceRequest() {
+
+        System.out.println(
+                "\n--- Add Service Request ---"
+        );
+
+        String studentId =
+                readNonEmpty(
+                        "Enter Student ID: "
+                );
+
+        Student student =
+                studentList.searchStudent(studentId);
+
+        if (student == null) {
+
+            System.out.println(
+                    "Student record not found."
+            );
+
+            System.out.println(
+                    "Add the student before creating a service request."
+            );
+
+            return;
+        }
+
+        String requestType =
+                readNonEmpty(
+                        "Enter Service Request: "
+                );
+
+        ServiceRequest request =
+                new ServiceRequest(
+                        nextRequestId,
+                        studentId,
+                        requestType
+                );
+
+        requestQueue.enqueue(request);
+
+        actionStack.push(
+                "Added Service Request #"
+                        + nextRequestId
+                        + " for Student: "
+                        + studentId
+        );
+
+        System.out.println(
+                "Service request added successfully."
+        );
+
+        System.out.println(
+                "Request ID: " + nextRequestId
+        );
+
+        nextRequestId++;
+    }
+
+    // -------------------------------------------------
+    // OPTION 6 - PROCESS SERVICE REQUEST
+    // -------------------------------------------------
 
     private static void processNextServiceRequest() {
-        ServiceRequest req = requestQueue.dequeue();
-        if (req == null) {
-            System.out.println("No pending service requests in queue.");
+
+        System.out.println(
+                "\n--- Process Next Service Request ---"
+        );
+
+        ServiceRequest request =
+                requestQueue.dequeue();
+
+        if (request == null) {
+
+            System.out.println(
+                    "No service requests available."
+            );
+
+            return;
+        }
+
+        System.out.println(
+                "Processing:"
+        );
+
+        System.out.println(request);
+
+        actionStack.push(
+                "Processed Service Request #"
+                        + request.getRequestId()
+        );
+
+        System.out.println(
+                "Service request processed successfully."
+        );
+    }
+
+    // -------------------------------------------------
+    // OPTION 9 - HASH SEARCH
+    // -------------------------------------------------
+
+    private static void searchStudentUsingHashing() {
+
+        System.out.println(
+                "\n--- Search Student using Hashing ---"
+        );
+
+        String studentId =
+                readNonEmpty(
+                        "Enter Student ID: "
+                );
+
+        Student student =
+                studentHashTable.searchStudent(
+                        studentId
+                );
+
+        if (student == null) {
+
+            System.out.println(
+                    "Student record not found."
+            );
+
         } else {
-            req.setStatus("COMPLETED");
-            actionStack.push("PROCESS_REQUEST", "Dequeued and completed request ID " + req.getRequestId());
-            System.out.println("Processed & Resolved Service Request: " + req);
+
+            System.out.println(
+                    "Student found:"
+            );
+
+            System.out.println(student);
         }
     }
 
-    private static void viewActionStackHistory() {
-        actionStack.displayHistory();
+    // -------------------------------------------------
+    // OPTION 10 - ADD LOCATION
+    // -------------------------------------------------
+
+    private static void addCampusLocation() {
+
+        System.out.println(
+                "\n--- Add Campus Location ---"
+        );
+
+        String location =
+                readNonEmpty(
+                        "Enter Location Name: "
+                );
+
+        boolean added =
+                campusGraph.addLocation(location);
+
+        if (added) {
+
+            actionStack.push(
+                    "Added Campus Location: "
+                            + location
+            );
+
+            System.out.println(
+                    "Campus location added successfully."
+            );
+
+        } else {
+
+            System.out.println(
+                    "Unable to add location."
+            );
+
+            System.out.println(
+                    "The location may already exist."
+            );
+        }
     }
 
-    private static void navigateCampusGraph(Scanner scanner) {
-        campusGraph.displayGraph();
-        System.out.println("\nLocations available: " + campusGraph.getLocations());
-        System.out.print("Enter Start Building: ");
-        String start = scanner.nextLine().trim();
+    // -------------------------------------------------
+    // OPTION 11 - REMOVE LOCATION
+    // -------------------------------------------------
 
-        System.out.print("Enter Destination Building: ");
-        String end = scanner.nextLine().trim();
+    private static void removeCampusLocation() {
 
-        CampusGraph.PathResult result = campusGraph.getShortestPath(start, end);
-        System.out.println("\n=== Dijkstra Shortest Path Result ===");
-        System.out.println(result);
+        System.out.println(
+                "\n--- Remove Campus Location ---"
+        );
 
-        actionStack.push("NAVIGATE_CAMPUS", "Calculated route from " + start + " to " + end);
+        String location =
+                readNonEmpty(
+                        "Enter Location Name: "
+                );
+
+        boolean removed =
+                campusGraph.removeLocation(location);
+
+        if (removed) {
+
+            actionStack.push(
+                    "Removed Campus Location: "
+                            + location
+            );
+
+            System.out.println(
+                    "Campus location removed successfully."
+            );
+
+        } else {
+
+            System.out.println(
+                    "Campus location not found."
+            );
+        }
     }
 
-    private static void runSystemSelfTest() {
-        System.out.println("\n==========================================");
-        System.out.println("     RUNNING SYSTEM DATA STRUCTURE TESTS   ");
-        System.out.println("==========================================");
+    // -------------------------------------------------
+    // OPTION 12 - ADD CONNECTION
+    // -------------------------------------------------
 
-        System.out.println("\n1. Testing Student LinkedList Size: " + studentList.size());
-        System.out.println("2. Testing ActionStack Top Item: " + actionStack.peek());
-        System.out.println("3. Testing ServiceRequestQueue Pending Count: " + requestQueue.size());
-        System.out.println("4. Testing BST Search for ID 103: " + studentBST.search(103));
-        System.out.println("5. Testing Hash Table Search for ID 101: " + studentHashTable.get(101));
+    private static void addCampusConnection() {
 
-        CampusGraph.PathResult sampleRoute = campusGraph.getShortestPath("Main Entrance", "Engineering Building");
-        System.out.println("6. Testing Campus Graph Dijkstra Route (Main Entrance -> Engineering Building):");
-        System.out.println("   " + sampleRoute);
+        System.out.println(
+                "\n--- Add Campus Connection / Road ---"
+        );
 
-        actionStack.push("SELF_TEST", "Ran data structures verification self-test.");
-        System.out.println("\nSelf-Test execution complete! All structures operating normally.");
+        String location1 =
+                readNonEmpty(
+                        "Enter First Location: "
+                );
+
+        String location2 =
+                readNonEmpty(
+                        "Enter Second Location: "
+                );
+
+        boolean added =
+                campusGraph.addConnection(
+                        location1,
+                        location2
+                );
+
+        if (added) {
+
+            actionStack.push(
+                    "Added Campus Connection: "
+                            + location1
+                            + " <-> "
+                            + location2
+            );
+
+            System.out.println(
+                    "Campus connection added successfully."
+            );
+
+        } else {
+
+            System.out.println(
+                    "Unable to add connection."
+            );
+
+            System.out.println(
+                    "Check whether both locations exist or the connection already exists."
+            );
+        }
+    }
+
+    // -------------------------------------------------
+    // OPTION 13 - REMOVE CONNECTION
+    // -------------------------------------------------
+
+    private static void removeCampusConnection() {
+
+        System.out.println(
+                "\n--- Remove Campus Connection / Road ---"
+        );
+
+        String location1 =
+                readNonEmpty(
+                        "Enter First Location: "
+                );
+
+        String location2 =
+                readNonEmpty(
+                        "Enter Second Location: "
+                );
+
+        boolean removed =
+                campusGraph.removeConnection(
+                        location1,
+                        location2
+                );
+
+        if (removed) {
+
+            actionStack.push(
+                    "Removed Campus Connection: "
+                            + location1
+                            + " <-> "
+                            + location2
+            );
+
+            System.out.println(
+                    "Campus connection removed successfully."
+            );
+
+        } else {
+
+            System.out.println(
+                    "Connection not found or location does not exist."
+            );
+        }
+    }
+
+    // -------------------------------------------------
+    // OPTION 15 - BFS
+    // -------------------------------------------------
+
+    private static void traverseCampusLocations() {
+
+        System.out.println(
+                "\n--- Campus Location Traversal ---"
+        );
+
+        System.out.println(
+                "Traversal Method: BFS"
+        );
+
+        String startLocation =
+                readNonEmpty(
+                        "Enter Starting Location: "
+                );
+
+        boolean success =
+                campusGraph.bfs(
+                        startLocation
+                );
+
+        if (!success) {
+
+            System.out.println(
+                    "Starting location not found."
+            );
+        }
+    }
+
+    // -------------------------------------------------
+    // INPUT VALIDATION
+    // -------------------------------------------------
+
+    private static String readNonEmpty(
+            String message) {
+
+        while (true) {
+
+            System.out.print(message);
+
+            String input =
+                    scanner.nextLine().trim();
+
+            if (!input.isEmpty()) {
+                return input;
+            }
+
+            System.out.println(
+                    "Input cannot be empty. Please try again."
+            );
+        }
+    }
+
+    private static int readInt(
+            String message,
+            int min,
+            int max) {
+
+        while (true) {
+
+            System.out.print(message);
+
+            String input =
+                    scanner.nextLine().trim();
+
+            try {
+
+                int number =
+                        Integer.parseInt(input);
+
+                if (number >= min
+                        && number <= max) {
+
+                    return number;
+                }
+
+                System.out.println(
+                        "Please enter a number from "
+                                + min
+                                + " to "
+                                + max
+                                + "."
+                );
+
+            } catch (NumberFormatException e) {
+
+                System.out.println(
+                        "Invalid input. Please enter a number."
+                );
+            }
+        }
+    }
+
+    private static double readDouble(
+            String message,
+            double min,
+            double max) {
+
+        while (true) {
+
+            System.out.print(message);
+
+            String input =
+                    scanner.nextLine().trim();
+
+            try {
+
+                double number =
+                        Double.parseDouble(input);
+
+                if (number >= min
+                        && number <= max) {
+
+                    return number;
+                }
+
+                System.out.println(
+                        "Marks must be between "
+                                + min
+                                + " and "
+                                + max
+                                + "."
+                );
+
+            } catch (NumberFormatException e) {
+
+                System.out.println(
+                        "Invalid marks. Please enter a numeric value."
+                );
+            }
+        }
     }
 }
